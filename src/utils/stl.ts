@@ -87,12 +87,20 @@ const parseBinarySTL = (bytes: Uint8Array): STLAnalysis => {
 };
 
 export const analyzeSTL = (bytes: Uint8Array): STLAnalysis => {
-  const header = new TextDecoder().decode(bytes.subarray(0, 5)).toLowerCase();
   const asText = new TextDecoder().decode(bytes);
+  const looksLikeAscii = /^\s*solid\b/i.test(asText) && /\n\s*facet\s+normal\s+/i.test(asText);
 
-  if (header === 'solid' && /\n\s*facet\s+normal\s+/i.test(asText)) {
-    return parseAsciiSTL(asText);
+  if (looksLikeAscii) {
+    try {
+      return parseAsciiSTL(asText);
+    } catch {
+      return parseBinarySTL(bytes);
+    }
   }
 
-  return parseBinarySTL(bytes);
+  try {
+    return parseBinarySTL(bytes);
+  } catch {
+    return parseAsciiSTL(asText);
+  }
 };
