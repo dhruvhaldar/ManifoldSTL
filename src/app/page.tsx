@@ -11,6 +11,7 @@ export default function Home() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [patchNameInput, setPatchNameInput] = useState('');
   const [patchTypeInput, setPatchTypeInput] = useState('wall');
+  const [uploadedFileName, setUploadedFileName] = useState('');
 
   useEffect(() => {
     // Initialize Manifold WASM on load
@@ -79,6 +80,7 @@ export default function Home() {
   const handleFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setUploadedFileName(file.name);
       const reader = new FileReader();
       reader.onload = (event) => {
         const buffer = event.target?.result as ArrayBuffer;
@@ -197,12 +199,14 @@ export default function Home() {
         <div className="glass-panel p-4 flex flex-col gap-3">
           <h2 className="text-lg font-semibold border-b border-white/20 pb-2">Target Object</h2>
           <div className="flex flex-col gap-2">
-            <label className="block text-sm font-medium text-slate-300">
+            <label htmlFor="stl-upload" className="block text-sm font-medium text-slate-300">
               Upload STL File
             </label>
             <input
+              id="stl-upload"
               type="file"
               accept=".stl"
+              aria-describedby="stl-upload-help stl-upload-status"
               onChange={handleFileUpload}
               className="block w-full text-sm text-slate-300
                 file:mr-4 file:py-2 file:px-4
@@ -213,12 +217,12 @@ export default function Home() {
                 cursor-pointer
               "
             />
-            {targetObject.isLoaded && (
-               <div className="text-xs text-green-400 mt-1">STL loaded successfully.</div>
-            )}
-            {isProcessing && (
-              <div className="text-xs text-yellow-400 mt-1 animate-pulse">Computing boolean difference...</div>
-            )}
+            <p id="stl-upload-help" className="text-xs text-slate-400">ASCII and binary STL files are supported.</p>
+            {uploadedFileName && <p className="text-xs text-slate-300">Selected: {uploadedFileName}</p>}
+            <div id="stl-upload-status" role="status" aria-live="polite" className="text-xs mt-1">
+              {targetObject.isLoaded && <span className="text-green-400">STL loaded successfully.</span>}
+              {isProcessing && <span className="text-yellow-400 animate-pulse">Computing boolean difference...</span>}
+            </div>
           </div>
         </div>
 
